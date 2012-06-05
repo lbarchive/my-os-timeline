@@ -12,10 +12,7 @@
 # Configuration
 
 # The basename of the .csv and .conf file
-PROJNAME='gldt'
-
-# Which files to include into the archive
-DISTFILES='gldt.csv gldt.conf ToDo ChangeLog README LICENSE images build.sh'
+PROJNAME='mot'
 
 # Custom path to gnuclad (leave empty if you already installed it in your PATH)
 GC=
@@ -24,7 +21,7 @@ GC=
 ##########
 # Code starts here
 
-VERS=$1
+BDIR="dist"
 
 # Check if which is present. Otherwise abort.
 type -P which &>/dev/null || { echo "which not found: aborting" >&2; exit 1;}
@@ -36,31 +33,23 @@ type -P $GC &>/dev/null && [ -n "$GC" ] ||
 
 # If GC is present, check for svg shortcut. Otherwise abort.
 [ -n "$GC" ] || { echo "gnuclad not found: aborting" >&2; exit 1; }
-[ "$VERS" == "svg" ] && { $GC $PROJNAME.csv svg $PROJNAME.conf; exit 0; }
 
 # Run gnuclad and abort on error.
-CHECK=`$GC $PROJNAME.csv $PROJNAME$VERS.svg $PROJNAME.conf`
+CHECK=`$GC $PROJNAME.csv $PROJNAME.svg $PROJNAME.conf`
 echo -e "$CHECK"
 [[ `echo -e "$CHECK" | grep "^Error:"` ]] && exit 1;
 
 # Check for Inkscape and run it if present. Otherwise ignore.
 INK=$(which inkscape)
 [ -n "$INK" ] || echo "Inkscape not found: will not generate png"
-[ -n "$INK" ] && $INK $PROJNAME$VERS.svg -D --export-png=$PROJNAME$VERS.png
+[ -n "$INK" ] && $INK $PROJNAME.svg -D --export-png=$PROJNAME.png
 
 # Packaging
 echo "Packaging..."
-type -P tar &>/dev/null || { echo "tar not found: aborting" >&2; exit 1;}
-type -P bzip2 &>/dev/null || { echo "bzip2 not found: aborting" >&2; exit 1;}
 
-tar -c $DISTFILES > $PROJNAME$VERS.tar
-bzip2 $PROJNAME$VERS.tar
-
-BDIR="DIST_$PROJNAME$VERS"
 mkdir -p $BDIR
-mv $PROJNAME$VERS.svg $BDIR
-[ -n "$INK" ] && mv $PROJNAME$VERS.png $BDIR
-mv $PROJNAME$VERS.tar.bz2 $BDIR
+mv $PROJNAME.svg $BDIR
+[ -n "$INK" ] && mv $PROJNAME.png $BDIR
 
 echo "Distribution can be found in $BDIR"
 
